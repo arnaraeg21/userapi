@@ -1,0 +1,17 @@
+{
+  "name": "userapi",
+  "version": "1.0.0",
+  "description": "User API for Lokaverkefni Stubb HR 2025 Group 08",
+  "license": "ISC",
+  "author": "Arnar Ægisson",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "express": "^5.1.0",
+    "sqlite3": "^5.1.7"
+  }
+}
