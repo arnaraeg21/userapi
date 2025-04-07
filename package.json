@@ -2,7 +2,7 @@
   "name": "userapi",
   "version": "1.0.0",
   "description": "User API for Lokaverkefni Stubb HR 2025 Group 08",
-  "license": "ISC",
+  "license": "MIT",
   "author": "Arnar Ægisson",
   "type": "commonjs",
   "main": "index.js",

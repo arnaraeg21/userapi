@@ -15,3 +15,11 @@ Make sure you have the following installed on your system:
    ```bash
    git clone https://github.com/<your-username>/<repository-name>.git
    cd <repository-name>
+   npm install
+
+## to start
+   node index.js
+
+## API Endpoints
+   POST /users: Create or update a user.
+   GET /users/:id: Get a user by ID.
