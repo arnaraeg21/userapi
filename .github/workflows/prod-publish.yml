@@ -41,7 +41,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 1437
           script: |
-            cd /var/www/html/userAPI
+            cd /var/www/html/userapi
             git pull origin main
             npm ci
-            pm2 restart userAPI
+            pm2 restart userapi
