@@ -30,18 +30,40 @@ app.post('/users', (req, res) => {
 
 // GET all users
 app.get('/users', (req, res) => {
+  console.log('Fetching all users...');
   db.all(`SELECT * FROM users`, (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 
+// GET user ID by phone number or email
+app.get('/users/id', (req, res) => {
+  const { phone, email } = req.query;
+  console.log('Phone:', phone, 'Email:', email);
+
+  if (!phone && !email) {
+    return res.status(400).json({ error: 'Please provide either a phone number or an email.' });
+  }
+  const query = `
+    SELECT id
+    FROM users
+    WHERE (fullPhoneNumber = ? OR email = ?)
+  `;
+  db.get(query, [phone || null, email || null], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!row) return res.status(404).json({ error: 'User not found' });
+    res.json(row);
+  });
+});
+
 // GET user by ID
 app.get('/users/:id', (req, res) => {
+  console.log('Fetching user by ID...');
   const { id } = req.params;
   db.get(`SELECT * FROM users WHERE id = ?`, [id], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
-    if (!row) return res.status(404).json({ error: 'User not found' });
+    if (!row) return res.status(404).json({ error: 'User with this id {id} not found' });
     res.json(row);
   });
 });
@@ -319,26 +341,6 @@ app.get('/users/:id/purchased_tickets', (req, res) => {
   db.all(query, [id], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
-  });
-});
-
-// GET user ID by phone number or email
-app.get('/users/id', (req, res) => {
-  const { phone, email } = req.query;
-
-  if (!phone && !email) {
-    return res.status(400).json({ error: 'Please provide either a phone number or an email.' });
-  }
-
-  const query = `
-    SELECT id
-    FROM users
-    WHERE fullPhoneNumber = ? OR email = ?
-  `;
-  db.get(query, [phone || null, email || null], (err, row) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (!row) return res.status(404).json({ error: 'User not found' });
-    res.json(row);
   });
 });
 

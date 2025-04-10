@@ -7,11 +7,14 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"No tests yet\""
+    "test": "echo \"No tests yet\"",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "dependencies": {
     "body-parser": "^2.2.0",
     "express": "^5.1.0",
+    "nodemon": "^3.1.9",
     "sqlite3": "^5.1.7"
   }
 }
