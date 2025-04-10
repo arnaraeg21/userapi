@@ -28,6 +28,6 @@ jobs:
           port: 1437
           script: |
             cd /var/www/html/userapi
-            git pull origin main
+            git pull origin master
             npm ci
             pm2 restart userapi
