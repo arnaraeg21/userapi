@@ -302,10 +302,7 @@ app.get('/user_favorite_teams', (req, res) => {
 app.get('/users/:id/favorite_teams', (req, res) => {
   const { id } = req.params;
   const query = `
-    SELECT teams.*
-    FROM teams
-    INNER JOIN user_favorite_teams ON teams.id = user_favorite_teams.team_id
-    WHERE user_favorite_teams.user_id = ?
+    SELECT team_id FROM user_favorite_teams WHERE user_id = ?
   `;
   db.all(query, [id], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
