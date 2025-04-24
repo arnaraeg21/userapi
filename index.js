@@ -5,6 +5,11 @@ const db = require('./db');
 const app = express();
 const PORT = 3171;
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swagger');
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 app.use(bodyParser.json());
 
 // Create or update user
