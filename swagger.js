@@ -6,7 +6,7 @@ const swaggerDefinition = {
   info: {
     title: 'User API for Stubb',
     version: '1.0.0',
-    description: 'Documentation userAPI',
+    description: 'Comprehensive documentation for the User API of the Stubb application.',
   },
   servers: [
     {
