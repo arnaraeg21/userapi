@@ -281,17 +281,69 @@ app.delete('/ticket_type_connections/:id', (req, res) => {
 
 // Create or update favorite team for a user
 app.post('/user_favorite_teams', (req, res) => {
-  const { id, user_id, team_id } = req.body;
-  const stmt = db.prepare(`
-    INSERT INTO user_favorite_teams (id, user_id, team_id)
-    VALUES (?, ?, ?)
-    ON CONFLICT(id) DO UPDATE SET
-      user_id=excluded.user_id,
-      team_id=excluded.team_id
-  `);
-  stmt.run(id, user_id, team_id, function (err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
+  const { user_id, team_ids } = req.body;
+  // Check if all parameters are in request body
+  if (!user_id || !Array.isArray(team_ids)) {
+    return res.status(400).json({ error: 'user_id and team_ids array are required' });
+  }
+  // converet array into string for sql query
+  const placeholders = team_ids.map(() => '?').join(',');
+  const deleteQuery = `
+    DELETE FROM user_favorite_teams
+    WHERE user_id = ?
+    AND team_id NOT IN (${placeholders})
+  `;
+  const insertQuery = `
+    INSERT OR IGNORE INTO user_favorite_teams (user_id, team_id)
+    VALUES (?, ?)
+  `;
+
+  db.serialize(() => {
+    // Start transaction, enables rollback on error
+    db.run('BEGIN TRANSACTION');
+
+    // DELETE teams from table not in input array
+    db.run(deleteQuery, [user_id, ...team_ids], function (err) {
+      if (err) {
+        console.error('Delete failed:', err.message);
+        db.run('ROLLBACK');
+        return res.status(500).json({ error: 'Failed to delete old teams', details: err.message });
+      }
+
+      // INSERT teams into table from input array not already in the table
+      const stmt = db.prepare(insertQuery);
+      let hasInsertError = false;
+
+      for (const team_id of team_ids) {
+        stmt.run(user_id, team_id, (err) => {
+          if (err) {
+            hasInsertError = true;
+            console.error('Insert failed for team_id', team_id, ':', err.message);
+            db.run('ROLLBACK');
+            return res.status(500).json({ error: 'Failed to insert team', details: err.message });
+          }
+        });
+      }
+
+      stmt.finalize((err) => {
+        if (hasInsertError) return; 
+
+        if (err) {
+          console.error('Finalize failed:', err.message);
+          db.run('ROLLBACK');
+          return res.status(500).json({ error: 'Failed to finalize insert', details: err.message });
+        }
+        // Commit the transaction into database if successfull
+        db.run('COMMIT', (err) => {
+          if (err) {
+            console.error('Commit failed:', err.message);
+            return res.status(500).json({ error: 'Transaction commit failed', details: err.message });
+          }
+
+          return res.json({ success: true });
+        });
+      });
+    });
   });
 });
 
