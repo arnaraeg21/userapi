@@ -28,23 +28,14 @@ app.post("/users", (req, res) => {
     verification_token,
     verification_expires,
   } = req.body;
-  const stmt = db.prepare(`
-    INSERT INTO users (id, fullPhoneNumber, email, full_name, profile_image, google_id, auth_type, apple_id, apple_email, is_verified, verification_token, verification_expires)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(id) DO UPDATE SET
-      fullPhoneNumber=excluded.fullPhoneNumber,
-      email=excluded.email,
-      full_name=excluded.full_name,
-      profile_image=excluded.profile_image,
-      google_id=excluded.google_id,
-      auth_type=excluded.auth_type,
-      apple_id=excluded.apple_id,
-      apple_email=excluded.apple_email,
-      is_verified=excluded.is_verified,
-      verification_token=excluded.verification_token,
-      verification_expires=excluded.verification_expires
-  `);
-  stmt.run(
+
+  // Build dynamic update clause based on provided fields
+  const updateFields = [];
+  const values = [];
+  const params = [];
+
+  // Add all fields to values array for INSERT
+  values.push(
     id,
     fullPhoneNumber,
     email,
@@ -56,12 +47,70 @@ app.post("/users", (req, res) => {
     apple_email,
     is_verified,
     verification_token,
-    verification_expires,
-    function (err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ success: true, id: this.lastID });
-    }
+    verification_expires
   );
+
+  // Only add fields to update clause if they are provided (not undefined)
+  if (fullPhoneNumber !== undefined) {
+    updateFields.push("fullPhoneNumber = excluded.fullPhoneNumber");
+    params.push(fullPhoneNumber);
+  }
+  if (email !== undefined) {
+    updateFields.push("email = excluded.email");
+    params.push(email);
+  }
+  if (full_name !== undefined) {
+    updateFields.push("full_name = excluded.full_name");
+    params.push(full_name);
+  }
+  if (profile_image !== undefined) {
+    updateFields.push("profile_image = excluded.profile_image");
+    params.push(profile_image);
+  }
+  if (google_id !== undefined) {
+    updateFields.push("google_id = excluded.google_id");
+    params.push(google_id);
+  }
+  if (auth_type !== undefined) {
+    updateFields.push("auth_type = excluded.auth_type");
+    params.push(auth_type);
+  }
+  if (apple_id !== undefined) {
+    updateFields.push("apple_id = excluded.apple_id");
+    params.push(apple_id);
+  }
+  if (apple_email !== undefined) {
+    updateFields.push("apple_email = excluded.apple_email");
+    params.push(apple_email);
+  }
+  if (is_verified !== undefined) {
+    updateFields.push("is_verified = excluded.is_verified");
+    params.push(is_verified);
+  }
+  if (verification_token !== undefined) {
+    updateFields.push("verification_token = excluded.verification_token");
+    params.push(verification_token);
+  }
+  if (verification_expires !== undefined) {
+    updateFields.push("verification_expires = excluded.verification_expires");
+    params.push(verification_expires);
+  }
+
+  const updateClause =
+    updateFields.length > 0
+      ? `ON CONFLICT(id) DO UPDATE SET ${updateFields.join(", ")}`
+      : "ON CONFLICT(id) DO NOTHING";
+
+  const stmt = db.prepare(`
+    INSERT INTO users (id, fullPhoneNumber, email, full_name, profile_image, google_id, auth_type, apple_id, apple_email, is_verified, verification_token, verification_expires)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ${updateClause}
+  `);
+
+  stmt.run(values, function (err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true, id: this.lastID });
+  });
 });
 
 // GET all users
