@@ -6,11 +6,11 @@ const swaggerDefinition = {
   info: {
     title: 'User API for Stubb',
     version: '1.0.0',
-    description: 'Comprehensive documentation for the User API of the Stubb application.',
+    description: 'API documentation for the User API.',
   },
   servers: [
     {
-      url: 'http://localhost:3171',
+      url: 'http://gosar.is:3171',
     },
   ],
 };

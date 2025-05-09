@@ -124,6 +124,14 @@ app.delete("/users/:id", (req, res) => {
 // Create or update ticket
 app.post("/tickets", (req, res) => {
   const { id, ticketdetails, ticketeventid, tickettype } = req.body;
+
+    // Validate required fields
+  if (!ticketdetails || !ticketeventid || !tickettype) {
+    return res.status(400).json({
+      error: "Missing required fields: ticketdetails, ticketeventid, and tickettype are required.",
+    });
+  }
+
   const stmt = db.prepare(`
     INSERT INTO tickets (id, ticketdetails, ticketeventid, tickettype)
     VALUES (?, ?, ?, ?)
@@ -171,6 +179,14 @@ app.delete("/tickets/:id", (req, res) => {
 // Create or update ticket type
 app.post("/ticket_types", (req, res) => {
   const { id, type } = req.body;
+
+  // Validate required fields
+  if (!type) {
+    return res.status(400).json({
+      error: "Missing required field: type is required.",
+    });
+  }
+
   const stmt = db.prepare(`
     INSERT INTO ticket_types (id, type)
     VALUES (?, ?)
@@ -267,6 +283,14 @@ app.delete("/user_tickets/:id", (req, res) => {
 // Create or update ticket-type connection
 app.post("/ticket_type_connections", (req, res) => {
   const { id, ticket_id, ticket_type_id } = req.body;
+
+    // Validate required fields
+    if (!ticket_id || !ticket_type_id) {
+      return res.status(400).json({
+        error: "Missing required fields: ticket_id and ticket_type_id are required.",
+      });
+    }
+
   const stmt = db.prepare(`
     INSERT INTO ticket_type_connections (id, ticket_id, ticket_type_id)
     VALUES (?, ?, ?)
@@ -316,6 +340,9 @@ app.get("/users/:id/tickets", (req, res) => {
   `;
   db.all(query, [id], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({ error: "No tickets found for the user" });
+    }
     res.json(rows);
   });
 });
@@ -343,7 +370,7 @@ app.post("/user_favorite_teams", (req, res) => {
       .status(400)
       .json({ error: "user_id and team_ids array are required" });
   }
-  // converet array into string for sql query
+  // Convert array into string for sql query
   const placeholders = team_ids.map(() => "?").join(",");
   const deleteQuery = `
     DELETE FROM user_favorite_teams
@@ -437,6 +464,7 @@ app.get("/users/:id/favorite_teams", (req, res) => {
     res.json(rows);
   });
 });
+
 // POST: Add a ticket purchase for a user
 app.post("/users/:id/tickets", (req, res) => {
   const { id } = req.params; // user_id
@@ -465,6 +493,9 @@ app.get("/users/:id/purchased_tickets", (req, res) => {
   `;
   db.all(query, [id], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({ error: "No tickets found for the user" });
+    }
     res.json(rows);
   });
 });
@@ -486,7 +517,7 @@ app.get("/verify_email", (req, res) => {
   db.run(query, [email, token], function (err) {
     if (err) return res.status(500).json({ error: err.message });
     if (this.changes === 0) {
-      return res.status(400).json({ error: "Invalid email or token" });
+      return res.status(404).json({ error: "Invalid email or token" });
     }
     res.json({ success: true, message: "Email verified successfully." });
   });
