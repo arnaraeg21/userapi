@@ -27,8 +27,9 @@ Make sure you have the following installed on your system:
 
 ### Users
 - **POST /users**: Create or update a user.
-- **GET /users/:id**: Get a user by ID.
+- **GET /users**: Get all users.
 - **GET /users/id?email={email}&phone={phone}**: Get a user ID by email or phone.
+- **GET /users/:id**: Get a user by ID.
 - **DELETE /users/:id**: Delete a user by ID.
 - **GET /verify_email?email={email}&token={token}**: Verify a user's email.
 
@@ -61,6 +62,12 @@ Make sure you have the following installed on your system:
 - **GET /user_favorite_teams**: Get all favorite teams for all users.
 - **GET /users/:id/favorite_teams**: Get all favorite teams for a specific user.
 
-### User Tickets
+### User Tickets (Purchases)
 - **POST /users/:id/tickets**: Add a ticket purchase for a user.
+- **GET /users/:id/tickets**: Get all tickets owned by a specific user.
 - **GET /users/:id/purchased_tickets**: Get all tickets purchased by a specific user.
+
+---
+
+**Tip:**  
+For full API documentation, visit `/api-docs` after starting the server.
